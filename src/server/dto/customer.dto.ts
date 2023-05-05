@@ -13,8 +13,8 @@ const customerDTOSchema = z.object({
   name: z.string(),
   email: z.string(),
   profileImageURL: z.string().optional(),
-  interests: z.array(z.string()),
   servicesSeeked: z.array(z.string()),
+  interests: z.array(z.string()),
 });
 
 export type CustomerDTO = z.infer<typeof customerDTOSchema>;
