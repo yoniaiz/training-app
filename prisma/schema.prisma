@@ -1,0 +1,218 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+enum Professions {
+  TRAINER
+  PHYSIOTHERAPIST
+  NUTRITIONIST
+}
+
+enum Roles {
+  ADMIN
+  CUSTOMER
+  SERVICE_PROVIDER
+}
+
+enum Expertise {
+  RUNNING
+  WEIGHTLIFTING
+  FAT_LOSS
+  ARMY_PREPARATION
+  POST_INJURY_REHABILITATION
+  POST_PREGNANCY_REHABILITATION
+  YOGA
+  PILATES
+  CROSSFIT
+  SWIMMING
+  CYCLING
+  BOXING
+  MARTIAL_ARTS
+  DANCING
+  GYMNASTICS
+  FOOTBALL
+  BASKETBALL
+  TENNIS
+  GOLF
+  KETTLEBELL
+  VEGITARIAN
+  VEGAN
+  PALEO
+  KETO
+}
+
+enum Day {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum Time {
+  SIX_AM
+  SEVEN_AM
+  EIGHT_AM
+  NINE_AM
+  TEN_AM
+  ELEVEN_AM
+  TWELVE_PM
+  ONE_PM
+  TWO_PM
+  THREE_PM
+  FOUR_PM
+  FIVE_PM
+  SIX_PM
+  SEVEN_PM
+  EIGHT_PM
+  NINE_PM
+  TEN_PM
+  ELEVEN_PM
+  TWELVE_AM
+  ONE_AM
+  TWO_AM
+  THREE_AM
+  FOUR_AM
+  FIVE_AM
+}
+
+model User {
+  id              String           @id
+  email           String           @unique
+  name            String?
+  role            Roles            @default(CUSTOMER)
+  profileImageURL String?
+  customer        Customer?
+  serviceProvider ServiceProvider?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Customer {
+  id            Int             @id @default(autoincrement())
+  user          User            @relation(fields: [userId], references: [id])
+  userId        String          @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  appointments  Appointment[]
+  trainingPlans TrainingPlan[]
+  notritionPlan NotritionPlan[]
+  servicesSeeked Professions[]
+  interests     Expertise[]    @default([])
+  reviews       Review[]
+  serviceProviders ServiceProvider[] 
+}
+
+model TrainingPlan {
+  id                Int             @id @default(autoincrement())
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  customerId        Int             @unique
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+  serviceProviderId Int             @unique
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model NotritionPlan {
+  id                Int             @id @default(autoincrement())
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  customerId        Int             @unique
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+  serviceProviderId Int             @unique
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Review {
+  id                Int             @id @default(autoincrement())
+  customer          Customer        @relation(fields: [customerId], references: [id])
+  customerId        Int             @unique
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+  serviceProviderId Int             @unique
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model Appointment {
+  id         Int      @id @default(autoincrement())
+  customer   Customer @relation(fields: [customerId], references: [id])
+  customerId Int      @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  date       DateTime
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  scheduleId Int      @unique
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String
+  address   String
+  city      String
+  state     String
+  country   String
+  zip       String
+  services  Service[]
+}
+
+model Service {
+  id                Int             @id @default(autoincrement())
+  name              String
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+  serviceProviderId Int             @unique
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  price             Float
+  location          Location      @relation(fields: [locationId], references: [id])
+  locationId        Int            @unique
+  duration          Int
+}
+
+model Availability {
+  id                Int             @id @default(autoincrement())
+  day               Day
+  time              Time[]
+  schedule          Schedule        @relation(fields: [scheduleId], references: [id])
+  scheduleId        Int             
+
+  @@index([scheduleId])
+}
+
+model Schedule {
+  id                Int             @id @default(autoincrement())
+  serviceProvider   ServiceProvider @relation(fields: [serviceProviderId], references: [id])
+  serviceProviderId Int             @unique
+  appointments      Appointment[]
+  availability      Availability[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model ServiceProvider {
+  id            Int             @id @default(autoincrement())
+  user          User            @relation(fields: [userId], references: [id])
+  userId        String          @unique
+  profession    Professions
+  expertise     Expertise[]
+  trainingPlans TrainingPlan[]
+  notritionPlan NotritionPlan[]
+  schedule      Schedule?
+  services      Service[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  reviews       Review[]
+  customers     Customer[]
+}
